@@ -1,7 +1,7 @@
+import './server/env';
 import express, { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
 import { chatCompletion, llmConfig, llmReachable } from './server/llm';
 import { buildMessages, isEscalation, parseAgentReply } from './server/agent';
 import { INITIAL_CLIENTS } from './src/data/seedData';
@@ -13,7 +13,6 @@ import { handleAppointmentSms, startReminders } from './server/reminders';
 import { addDnc } from './server/compliance';
 import { addLine, customerConferenceTwiml, findCallBySid, newCall, openingTwiml } from './server/calls';
 import { db } from './server/store';
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
