@@ -10,7 +10,7 @@ import { DialerSettingsForm } from './DialerSettingsForm';
 const CONSENT_TEXT =
   'I confirm everyone on this list agreed to be called by my business (for example, they filled out a form, are a customer, or asked us to call). Calls use an AI voice, which the law treats like a recorded voice.';
 
-export const CampaignsPanel: React.FC<{ scripts: CallScript[]; defaults?: DialerSettings; refreshKey: number }> = ({ scripts, defaults, refreshKey }) => {
+export const CampaignsPanel: React.FC<{ scripts: CallScript[]; defaults?: DialerSettings; refreshKey: number; leadgenproConfigured?: boolean }> = ({ scripts, defaults, refreshKey, leadgenproConfigured }) => {
   const [campaigns, setCampaigns] = useState<CampaignWithStats[]>([]);
   const [selectedId, setSelectedId] = useState('');
   const [msg, setMsg] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
@@ -83,7 +83,7 @@ export const CampaignsPanel: React.FC<{ scripts: CallScript[]; defaults?: Dialer
       <div className="space-y-4">
         {msg && <Notice kind={msg.kind} onClose={() => setMsg(null)}>{msg.text}</Notice>}
         {selected ? (
-          <CampaignDetail key={selected.id} campaign={selected} scripts={scripts} reload={load} setMsg={setMsg} onDeleted={() => setSelectedId('')} />
+          <CampaignDetail key={selected.id} campaign={selected} scripts={scripts} reload={load} setMsg={setMsg} onDeleted={() => setSelectedId('')} leadgenproConfigured={leadgenproConfigured} />
         ) : (
           <Card>
             <p className="text-sm text-slate-400">Create a campaign to load a list of numbers and start dialing.</p>
@@ -100,7 +100,8 @@ const CampaignDetail: React.FC<{
   reload: () => Promise<void>;
   setMsg: (m: { kind: 'error' | 'success'; text: string } | null) => void;
   onDeleted: () => void;
-}> = ({ campaign: c, scripts, reload, setMsg, onDeleted }) => {
+  leadgenproConfigured?: boolean;
+}> = ({ campaign: c, scripts, reload, setMsg, onDeleted, leadgenproConfigured }) => {
   const { busy, run } = useAction(setMsg);
   const [tab, setTab] = useState<'contacts' | 'upload' | 'settings'>(c.stats.total ? 'contacts' : 'upload');
   const [draft, setDraft] = useState({ name: c.name, mode: c.mode, scriptId: c.scriptId, settings: c.settings });
@@ -136,6 +137,18 @@ const CampaignDetail: React.FC<{
             >
               <RotateCcw className="w-3.5 h-3.5" /> Redial unreached
             </Button>
+            {leadgenproConfigured && (
+              <Button
+                small
+                disabled={busy}
+                title="Pull new leads from leadgenpro into this campaign"
+                onClick={() =>
+                  run(() => api.syncLeadgenpro(c.id), (r: any) => `${r.added} new lead${r.added === 1 ? '' : 's'} added (${r.skipped} already here).`).then(reload)
+                }
+              >
+                <PhoneOutgoing className="w-3.5 h-3.5" /> Sync from leadgenpro
+              </Button>
+            )}
             <Button
               small
               kind="danger"

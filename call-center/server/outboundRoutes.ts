@@ -46,6 +46,7 @@ import { fillPlaceholders } from './scripts';
 import { adminPasswordSet } from './auth';
 import { disconnectGoogle, finishGoogleAuth, googleAuthUrl, googleConfigured, googleConnected } from './google';
 import { llmConfig } from './llm';
+import { fetchNewLeads, leadgenproConfigured } from './leadgenpro';
 
 const PRODUCTION = process.env.NODE_ENV === 'production' || process.argv.includes('--prod') || !!process.env.RENDER;
 
@@ -143,6 +144,7 @@ function setupStatus(): SetupStatus {
     googleConnected: googleConnected(),
     agentPhoneSet: !!db.settings.agentPhone,
     signatureCheck: signatureCheckEnabled(),
+    leadgenproConfigured: leadgenproConfigured(),
   };
 }
 
@@ -351,6 +353,47 @@ export function registerOutbound(app: Express) {
     db.contacts = db.contacts.filter(x => x.id !== req.params.id);
     save();
     res.json({ ok: true });
+  }));
+
+  // Pulls new leads from leadgenpro (LEADGENPRO_BASE_URL/LEADGENPRO_API_KEY)
+  // into a campaign here, so they can be dialed/texted. Calls placed against
+  // a lead pulled this way report their outcome back to leadgenpro when the
+  // call ends (see server/dialer.ts).
+  api.post('/campaigns/:id/leadgenpro-sync', wrap(async (req, res) => {
+    if (!leadgenproConfigured()) fail('Set LEADGENPRO_BASE_URL and LEADGENPRO_API_KEY first.');
+    const c = db.campaigns.find(x => x.id === req.params.id) || fail('Campaign not found');
+    const leads = await fetchNewLeads(Number(req.body?.limit) || 200);
+    const existingLeadIds = new Set(
+      db.contacts.filter(x => x.campaignId === c!.id).map(x => x.extra?.leadgenpro_lead_id).filter(Boolean),
+    );
+    const existingPhones = new Set(db.contacts.filter(x => x.campaignId === c!.id).map(x => x.phone));
+    let added = 0, skipped = 0;
+    for (const lead of leads) {
+      if (existingLeadIds.has(String(lead.id))) { skipped++; continue; }
+      const phone = normalizePhone(lead.phone || '');
+      if (!phone || existingPhones.has(phone)) { skipped++; continue; }
+      const onDnc = isDnc(phone);
+      db.contacts.push({
+        id: newId('ct'),
+        campaignId: c!.id,
+        name: `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Lead',
+        phone,
+        email: lead.email || undefined,
+        extra: {
+          leadgenpro_lead_id: String(lead.id),
+          ...(lead.company_name ? { company: lead.company_name } : {}),
+          ...(lead.industry ? { industry: lead.industry } : {}),
+        },
+        status: onDnc ? 'dnc' : 'pending',
+        attempts: 0,
+        createdAt: new Date().toISOString(),
+      });
+      existingPhones.add(phone);
+      added++;
+    }
+    if (c!.status === 'completed' && added) c!.status = 'paused';
+    save();
+    res.json({ fetched: leads.length, added, skipped });
   }));
 
   // ── Calls ─────────────────────────────────────────────────────────────────

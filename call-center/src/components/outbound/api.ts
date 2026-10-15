@@ -54,6 +54,8 @@ export const api = {
   startCampaign: (id: string) => request<CampaignWithStats>('POST', `/campaigns/${id}/start`),
   pauseCampaign: (id: string) => request<CampaignWithStats>('POST', `/campaigns/${id}/pause`),
   recycleCampaign: (id: string) => request<{ recycled: number }>('POST', `/campaigns/${id}/recycle`),
+  syncLeadgenpro: (id: string) =>
+    request<{ fetched: number; added: number; skipped: number }>('POST', `/campaigns/${id}/leadgenpro-sync`),
   contacts: (id: string, q = '', status = '') =>
     request<{ total: number; contacts: Contact[] }>('GET', `/campaigns/${id}/contacts?q=${encodeURIComponent(q)}&status=${status}`),
   importContacts: (id: string, contacts: unknown[], consentConfirmed: boolean) =>

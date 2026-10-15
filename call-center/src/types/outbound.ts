@@ -190,4 +190,5 @@ export interface SetupStatus {
   googleConnected: boolean;
   agentPhoneSet: boolean;
   signatureCheck: boolean;
+  leadgenproConfigured: boolean;
 }

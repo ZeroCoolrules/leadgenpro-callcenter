@@ -127,7 +127,7 @@ export const OutboundDialer: React.FC = () => {
           </div>
 
           {section === 'live' && <LiveCallsPanel agentPhoneSet={!!settings.agentPhone} />}
-          {section === 'campaigns' && <CampaignsPanel scripts={scripts} defaults={settings.defaultDialer} refreshKey={0} />}
+          {section === 'campaigns' && <CampaignsPanel scripts={scripts} defaults={settings.defaultDialer} refreshKey={0} leadgenproConfigured={!!status?.leadgenproConfigured} />}
           {section === 'reminders' && <RemindersPanel settings={settings} googleConnected={!!status?.googleConnected} />}
           {section === 'scripts' && <ScriptsPanel scripts={scripts} reload={loadScripts} />}
           {section === 'settings' && <SettingsPanel settings={settings} scripts={scripts} status={status} onSaved={setSettings} refreshStatus={loadStatus} />}

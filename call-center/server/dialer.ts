@@ -7,6 +7,7 @@ import { canCallNow, isDnc } from './compliance';
 import { createCall, publicBaseUrl, twilioConfigured, callerId } from './twilio';
 import { isActive, newCall, sweepStaleCalls } from './calls';
 import { onReminderCallEnded } from './reminders';
+import { reportOutcome, type LeadgenproOutcome } from './leadgenpro';
 
 const TICK_MS = 3000;
 const RETRY_STATES = new Set(['pending', 'no_answer', 'busy', 'failed', 'voicemail']);
@@ -106,8 +107,33 @@ export function onCallEnded(call: CallRecord) {
     if (RETRY_STATES.has(contact.status) && contact.attempts < campaign.settings.maxAttempts) {
       contact.nextAttemptAt = new Date(Date.now() + campaign.settings.retryDelayMinutes * 60000).toISOString();
     }
+    reportContactOutcomeToLeadgenpro(contact, call);
   }
   save();
+}
+
+// If this contact came from leadgenpro (see /api/outbound/leadgenpro/sync),
+// let leadgenpro know how the call went. Best-effort: never blocks the
+// dialer or throws.
+function reportContactOutcomeToLeadgenpro(contact: Contact, call: CallRecord) {
+  const leadId = Number(contact.extra?.leadgenpro_lead_id);
+  if (!leadId) return;
+  const outcome: LeadgenproOutcome =
+    contact.status === 'booked' ? 'meeting_booked' :
+    contact.status === 'dnc' ? 'not_interested' :
+    contact.status === 'voicemail' ? 'voicemail' :
+    contact.status === 'no_answer' || contact.status === 'busy' ? 'no_answer' :
+    contact.status === 'failed' ? 'wrong_number' :
+    'other';
+  reportOutcome({
+    leadId,
+    channel: 'voice',
+    outcome,
+    callId: call.callSid || call.id,
+    durationSeconds: call.durationSec,
+    transcript: call.transcript?.map(t => `${t.speaker}: ${t.text}`).join('\n'),
+    notes: call.outcome,
+  });
 }
 
 let ticking = false;
