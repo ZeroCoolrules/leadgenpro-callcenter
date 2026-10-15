@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: leadgenpro
+    env: docker
+    plan: starter
+    healthCheckPath: /login.html
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: APP_URL
+        sync: false

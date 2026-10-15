@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --miami-black: #080B12;
+    --neon-pink: #F43F5E;
+    --neon-cyan: #06B6D4;
+    --sunset-gold: #F59E0B;
+    --ocean-navy: #0F172A;
+    --palm-cream: #FDF8F0;
+  }
+}
+
+.font-display {
+  font-family: 'Righteous', 'Anton', 'Bebas Neue', Impact, sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.font-miami {
+  font-family: 'Righteous', cursive, sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.font-body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+.font-mono-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 1980s Miami Scarface Neon Shadows */
+.shadow-neon-pink {
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.45), 4px 4px 0 #F43F5E;
+}
+
+.shadow-neon-pink-lg {
+  box-shadow: 0 0 24px rgba(244, 63, 94, 0.65), 6px 6px 0 #F43F5E;
+}
+
+.shadow-neon-cyan {
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.45), 4px 4px 0 #06B6D4;
+}
+
+.shadow-neon-cyan-lg {
+  box-shadow: 0 0 24px rgba(6, 182, 212, 0.65), 6px 6px 0 #06B6D4;
+}
+
+.shadow-sunset-gold {
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.45), 4px 4px 0 #F59E0B;
+}
+
+.shadow-comic-ink {
+  box-shadow: 4px 4px 0 #04060A;
+}
+
+.shadow-comic-red {
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.35), 4px 4px 0 #F43F5E;
+}
+
+.shadow-comic-mustard {
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.35), 4px 4px 0 #F59E0B;
+}
+
+/* 80s Miami Retro Grid Texture */
+.bg-miami-grid {
+  background-image: 
+    linear-gradient(rgba(244, 63, 94, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-miami-gradient {
+  background: linear-gradient(135deg, #090D18 0%, #161228 50%, #0B192C 100%);
+}
+
+.bg-halftone {
+  background-image: radial-gradient(rgba(244, 63, 94, 0.12) 1.2px, transparent 1.2px);
+  background-size: 10px 10px;
+}
+
+.bg-hazard-stripes {
+  background: repeating-linear-gradient(
+    -45deg,
+    #F43F5E,
+    #F43F5E 12px,
+    #080B12 12px,
+    #080B12 24px
+  );
+}
+
+@keyframes pulse-miami-neon {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(244, 63, 94, 0.7), 0 0 30px rgba(6, 182, 212, 0.4);
+    border-color: #F43F5E;
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(6, 182, 212, 0.9), 0 0 44px rgba(244, 63, 94, 0.6);
+    border-color: #22D3EE;
+  }
+}
+
+.animate-miami-neon {
+  animation: pulse-miami-neon 2.5s infinite ease-in-out;
+}
+
+

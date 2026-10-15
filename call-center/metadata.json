@@ -1,0 +1,9 @@
+{
+  "name": "Remix Call AI Center by Dreamcadian ",
+  "description": "Call Ai Center is a agentic control center for sdr and message coordination ",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}

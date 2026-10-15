@@ -1,0 +1,51 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# In Render: New + → Blueprint → pick this repo. It asks for LLM_API_KEY once.
+services:
+  - type: web
+    name: call-ai-center
+    runtime: node
+    plan: free
+    buildCommand: npm install --include=dev --no-audit --no-fund && npx vite build
+    startCommand: npx tsx server.ts --prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Render can't run Ollama, so use a hosted OpenAI-compatible model.
+      # Groq has a free tier: create a key at https://console.groq.com/keys
+      - key: LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: LLM_MODEL
+        value: llama-3.1-8b-instant
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_TIMEOUT_MS
+        value: "12000"
+      - key: TWILIO_VOICE
+        value: Polly.Joanna
+      - key: HUMAN_FORWARD_NUMBER
+        sync: false
+      # ── Outbound dialer & reminders (see README "Outbound dialer") ──
+      # Password for the dashboard. The dialer stays locked until this is set.
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      # Your Twilio phone number, e.g. +13055550100
+      - key: TWILIO_FROM_NUMBER
+        sync: false
+      # Optional: Google Calendar + Meet links (README step 6)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+    # To keep contacts/appointments across deploys and keep the dialer awake,
+    # switch to the Starter plan and uncomment these lines (README step 3):
+    # plan: starter
+    # disk:
+    #   name: data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # and add under envVars:  - key: DATA_DIR / value: /var/data
